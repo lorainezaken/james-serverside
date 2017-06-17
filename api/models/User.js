@@ -7,4 +7,4 @@ let userSchema = new mongoose.Schema({
     password: { type: String, minLength: 6 }
 });
 
-module.exports = mongoose.model(userSchema, "User");
+module.exports = mongoose.model("User", userSchema);

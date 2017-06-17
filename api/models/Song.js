@@ -5,7 +5,7 @@ let songSchema = new mongoose.Schema({
     playingTime: Number,
     songFileUrl: String,
     albumCoverUrl: String,
-    artist: { type: mongoose.Types.ObjectId, ref: "Artist" }
+    artist: { type: mongoose.Schema.Types.ObjectId, ref: "Artist" }
 });
 
-module.exports = mongoose.model(songSchema, "Song");
+module.exports = mongoose.model("Song", songSchema);
