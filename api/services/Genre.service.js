@@ -33,6 +33,7 @@ module.exports = {
         .then(artists => {
             return artists.map(artist => {
                 return {
+                    artistId: artist._id,
                     artistName: artist.name
                 }
             });
