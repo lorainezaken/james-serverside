@@ -1,16 +1,16 @@
 const bootstrap = require('./bootstrap.js');
 const express = require('express');
 const controllers = require('./api/controllers/index.js');
+const cors = require('cors');
 
 let app = express();
 const port = process.env.PORT || 8080;
 
 bootstrap();
-const Artist = require('./api/models/Artist.js');
-const FunkGenre = require('./api/models/FunkGenre.js');
-const Song = require('./api/models/Song.js');
-const Promise = require('bluebird');
 
+app.use(cors({
+    optionsSuccessStatus:200
+}))
 app.use(controllers);
 app.listen(port, () => {
     // FunkGenre.find({})
