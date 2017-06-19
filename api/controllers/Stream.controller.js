@@ -40,7 +40,9 @@ router.post('/stream/:streamId/songs',
             })
             .catch(err => {
                 console.error(err);
-                return res.status(HttpStatus.BAD_REQUEST).send();
+                return res.status(HttpStatus.BAD_REQUEST).json({
+                    message: err.message
+                }).send();
             })
     })
 
