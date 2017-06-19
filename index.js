@@ -13,22 +13,6 @@ const Promise = require('bluebird');
 
 app.use(controllers);
 app.listen(port, () => {
-
-    Artist.find({})
-        .then(artists => {
-            let i = 0;
-
-            for(let artist of artists) {
-                let song = new Song();
-                song.name = i++;
-
-                song.save()
-                    .then(sng => {
-                        artist.songs.push(sng);
-                        artist.save();
-                    })
-            }
-        })
     // FunkGenre.find({})
     //     .then(genres => {
     //         let artist = new Artist();

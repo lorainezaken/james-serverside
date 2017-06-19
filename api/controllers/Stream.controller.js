@@ -23,4 +23,25 @@ router.get('/stream',
             })
     })
 
+router.post('/stream/:streamId/songs',
+    (req, res) => {
+        let streamId = req.params.streamId;
+        let songIds = req.query.songIds;
+
+        if (songIds === undefined)
+            return res.status(HttpStatus.BAD_REQUEST).json({
+                message: "you must provide songIds as a parameter"
+            })
+        songIds = songIds.split(',');
+
+        return StreamService.addSongsToStream(streamId, songIds)
+            .then(() => {
+                return res.status(HttpStatus.OK).send();
+            })
+            .catch(err => {
+                console.error(err);
+                return res.status(HttpStatus.BAD_REQUEST).send();
+            })
+    })
+
 module.exports = router;
