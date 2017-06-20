@@ -31,7 +31,7 @@ module.exports = {
                 
                 for (let song of stream.songs) {
                     if (songsIds.includes(song.toString()))
-                        throw new Error("the given song allready exists in the stream");
+                        return;
                 }
 
                 stream.songs.push(...songsToAdd);
