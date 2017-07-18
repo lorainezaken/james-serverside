@@ -1,14 +1,18 @@
 const bootstrap = require('./bootstrap.js');
 const express = require('express');
 const controllers = require('./api/controllers/index.js');
+const config = require('./config/passport.js');
+const passport = require('passport');
 const cors = require('cors');
 
 let app = express();
 const port = process.env.PORT || 8080;
 
-
 bootstrap();
 
+config(passport);
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(cors({
     optionsSuccessStatus:200
 }))
