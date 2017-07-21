@@ -2,6 +2,7 @@ const User = require('../models/User.js');
 const bcrypt = require('bcryptjs');
 const BadRequestError = require('../errors/BadRequestError.js');
 const UnauthorizedError = require('../errors/UnauthorizedError.js');
+const StreamService = require('./Stream.service.js');
 
 module.exports = {
 	verifyUser({ email, password }) {
@@ -16,7 +17,13 @@ module.exports = {
 			if (!user.verifyPassword(password))
 				throw new UnauthorizedError('credentials dont match');
 
-			return user;
+			return StreamService.getStream(user)
+				.then(stream => ({
+						email: user.email,
+						username: user.username,
+						id: user._id,
+						streamId: stream.streamId
+					}));
 		})
 	},
 	register({ username, email, password, artists, profilePic }) {
@@ -35,6 +42,17 @@ module.exports = {
 				password,
 				profilePic
 			})
+		})
+		.then(user => {
+			return StreamService.createStream(user, artists)
+				.then(stream => {
+					return {
+						email: user.email,
+						username: user.username,
+						id: user._id,
+						streamId: stream.id
+					}
+				})
 		})
 	}
 }

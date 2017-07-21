@@ -8,15 +8,11 @@ const JWTService = require('../services/JWTService.js');
 router.post('/login',
     (req, res) => {
 		return UserService.verifyUser(req.body)
-			.then((user) => {
-				let token = JWTService.createJWT({ user, subject: 'login', expireTime: '7d' });
+			.then((data) => {
+				let token = JWTService.createJWT({ user: data, subject: 'login', expireTime: '7d' });
 				return res.json({
 					token,
-					user: { 
-						email: user.email,
-						username: user.username,
-						id: user._id
-					}
+					data
 				}).status(HttpStatus.OK).send();
 			})
 			.catch(err => {
@@ -30,22 +26,20 @@ router.post('/login',
 router.post('/register',
 	(req, res) => {
 		return UserService.register(req.body)
-			.then((user) => {
-				let token = JWTService.createJWT({ user, subject: 'login', expireTime: '7d' });
+			.then((data) => {
+				let token = JWTService.createJWT({ user: data, subject: 'login', expireTime: '7d' });
 				return res.json({
 					token,
-					user: {
-						email: user.email,
-						username: user.username,
-						id: user._id
-					}
+					data
 				}).status(HttpStatus.OK).send();
 			})
 			.catch(err => {
 				if (err.status)
 					res.status(err.status).json(err).send();
-				else
+				else {
+					console.error(err);
 					res.sendStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+				}
 			})
 	})
 

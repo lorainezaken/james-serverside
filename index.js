@@ -5,11 +5,14 @@ const config = require('./config/passport.js');
 const passport = require('passport');
 const bodyparser = require('body-parser');
 const cors = require('cors');
+const path = require('path');
 
 let app = express();
 const port = process.env.PORT || 8080;
 
 bootstrap();
+
+app.use(express.static(path.join(__dirname, 'songs')));
 
 config(passport);
 app.use(passport.initialize());

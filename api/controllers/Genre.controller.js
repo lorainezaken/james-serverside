@@ -26,7 +26,7 @@ router.get('/funkGenresArtists',
             })
         genreIds = genreIds.split(',');
 
-        return GenreService.getGenresCommonArtists(genreIds)
+        return GenreService.getGenresArtists(genreIds)
             .then(artists => {
                 return res.status(HttpStatus.OK).json({
                     artists

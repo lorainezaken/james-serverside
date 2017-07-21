@@ -1,8 +1,19 @@
 const Stream = require('../models/Stream.js');
 const SongService = require('./Song.service.js');
+const ArtistService = require('./Artist.service.js');
 const Promise = require('bluebird');
 
 module.exports = {
+    createStream(user, artists) {
+        return ArtistService.getSongs(artists)
+            .then(songs => {
+                return Stream.create({
+                    user,
+                    songs: songs.map(song => song.id)
+                })
+            })
+    },
+
     getStream(userId) {
         return Stream.findOne({
             user: userId

@@ -13,7 +13,7 @@ module.exports = {
             })
         })
     },
-    getGenresCommonArtists(genereIds) {
+    getGenresArtists(genereIds) {
         return FunkGenre.find({
             _id: {
                 $in: genereIds
@@ -22,13 +22,14 @@ module.exports = {
             if (genres.length === 0)
                 throw Error('no such genres');
 
-            let commonArtists = genres[0].artists;
+            let artists = new Set();
 
             for (let genre of genres) {
-               commonArtists = commonArtists.filter(artist => genre.artists.map(objId => objId.toString()).includes(artist.toString())) 
+                for (let artistId of genre.artists)
+                    artists.add(artistId);
             }
 
-            return Artist_service.getArtists(commonArtists);
+            return Artist_service.getArtists([...artists]);
         })
         .then(artists => {
             return artists.map(artist => {
