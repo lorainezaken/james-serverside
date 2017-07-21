@@ -1,61 +1,52 @@
-// load all the things we need
-const LocalStrategy   = require('passport-local').Strategy;
-const UserService = require('../api/services/User.service.js');
-
-// load up the user model
 const User = require('../api/models/User.js');
+const JWTService = require('../api/services/JWTService.js');
+const JwtStrategy = require('passport-jwt').Strategy;
+const ExtractJwt = require('passport-jwt').ExtractJwt;
+const Promise = require('bluebird')
+const moment = require('moment');
 
-// expose this function to our app using module.exports
 module.exports = function(passport) {
 
-    // used to serialize the user for the session
-    passport.serializeUser(function(user, done) {
-        done(null, user.id);
-    });
-
-    // used to deserialize the user
-    passport.deserializeUser(function(id, done) {
-        User.findById(id, function(err, user) {
-            done(err, user);
-        });
+	passport.serializeUser((user, done) => {
+		done(null, user.id);
 	});
-	
-	passport.use('local', new LocalStrategy({
-		usernameField: 'email',
-    	passwordField: 'pass',
-	}, function(email, password, done) {
-		User.findOne({ email }, function (err, user) {
-			if (err)
-				return done(err);
 
-			if (!user)
-				return done(null, false);
-
-			if (!user.verifyPassword(password)) 
-				return done(null, false);
-			
-			return done(null, user);
+	passport.deserializeUser((id, done) => {
+		User.findById(id, (err, user) => {
+			done(err, user);
 		});
-	}));
+	});
 
-	passport.use('local-reg', new LocalStrategy({
-		usernameField: 'email',
-    	passwordField: 'pass',
-		passReqToCallback : true
-	}, 
-	(req, email, password, done) => {
-		let username = req.param("username");
-		let profilePic = req.param("profilePic");
+	/**
+	 * @desc use passports 'JWT' strategy
+	 */
+	let opts = {
+		jwtFromRequest: ExtractJwt.fromExtractors([ExtractJwt.fromAuthHeader(), ExtractJwt.fromUrlQueryParameter("access_token")]),
+		secretOrKey: 'secret'
+	};
+	passport.use(new JwtStrategy(opts, function(jwtPayload, done) {
 
-		if (!username || !email || !password)
-			return done(new Error("must send all required fields"));
-		
-		return UserService.register(username, email, password, profilePic)
+		// Validate user
+		return Promise.try(() => {
+			if (jwtPayload.sub !== config.jwt.loginSubject)
+				throw new Error('Token subject is incorrect');
+		})
+			.then(() => User.findById(jwtPayload.user))
 			.then(user => {
-				return done(null, user);
+				if (!user)
+					throw new Error('Token didn\'t contain a valid user');
+				return user;
 			})
-			.catch(err => {
-				return done(new Error("general error with registering user"));
+			.then(user => {
+				return done(null, { user });
 			})
+			.catch((err) => {
+				if (err instanceof UnauthorizedError)
+					return done(err);
+				else {
+					console.warn('failed to authenticate jwt', err);
+					return done(new Error('Failed to authenticate user'));
+				}
+			});
 	}));
 };

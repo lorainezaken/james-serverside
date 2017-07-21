@@ -1,24 +1,52 @@
 const router = require('express').Router();
 const passport = require('passport');
 const HttpStatus = require('http-status-codes');
-
+const UserService = require('../services/User.service.js');
+const BadRequestError = require('../errors/BadRequestError.js');
+const JWTService = require('../services/JWTService.js');
 
 router.post('/login',
-	passport.authenticate('local'),
     (req, res) => {
-        if (req.isAuthenticated())
-			res.sendStatus(HttpStatus.OK);
-		else
-			res.sendStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+		return UserService.verifyUser(req.body)
+			.then((user) => {
+				let token = JWTService.createJWT({ user, subject: 'login', expireTime: '7d' });
+				return res.json({
+					token,
+					user: { 
+						email: user.email,
+						username: user.username,
+						id: user._id
+					}
+				}).status(HttpStatus.OK).send();
+			})
+			.catch(err => {
+				if (err.status)
+					res.status(err.status).json(err).send();
+				else
+					res.sendStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+			})
 	})
 
 router.post('/register',
-	passport.authenticate('local-reg'),
 	(req, res) => {
-		if (req.isAuthenticated())
-			res.sendStatus(HttpStatus.OK);
-		else
-			res.sendStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+		return UserService.register(req.body)
+			.then((user) => {
+				let token = JWTService.createJWT({ user, subject: 'login', expireTime: '7d' });
+				return res.json({
+					token,
+					user: {
+						email: user.email,
+						username: user.username,
+						id: user._id
+					}
+				}).status(HttpStatus.OK).send();
+			})
+			.catch(err => {
+				if (err.status)
+					res.status(err.status).json(err).send();
+				else
+					res.sendStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+			})
 	})
 
 module.exports = router;

@@ -3,6 +3,7 @@ const express = require('express');
 const controllers = require('./api/controllers/index.js');
 const config = require('./config/passport.js');
 const passport = require('passport');
+const bodyparser = require('body-parser');
 const cors = require('cors');
 
 let app = express();
@@ -13,6 +14,7 @@ bootstrap();
 config(passport);
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(bodyparser.json());
 app.use(cors({
     optionsSuccessStatus:200
 }))
