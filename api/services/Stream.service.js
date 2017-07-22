@@ -59,6 +59,7 @@ module.exports = {
         return Stream.find({
             user: { $ne: user }
         }).populate('songs')
+            .populate('user')
             .then(streams => {
                 return this.formatStreams(streams);
             })
@@ -73,6 +74,7 @@ module.exports = {
                 return Stream.find({
                     _id: { $in: user.followingStreams}
                 }).populate('songs')
+                .populate('user')
             })
             .then(streams => {
                 return this.formatStreams(streams);
@@ -98,6 +100,8 @@ module.exports = {
                         streamId: stream._id,
                         followers: stream.followers,
                         artists: artistsNames,
+                        username: (stream.user || {}).username,
+	                    userProfilePic: (stream.user || {}).profilePictureUrl,
                         genres
                     };
                 }
