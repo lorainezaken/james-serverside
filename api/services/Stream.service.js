@@ -1,7 +1,9 @@
 const Stream = require('../models/Stream.js');
+const User = require('../models/User.js');
 const SongService = require('./Song.service.js');
 const ArtistService = require('./Artist.service.js');
 const GenreService = require('./Genre.service.js');
+const BadRequestError = require('../errors/BadRequestError.js');
 const Promise = require('bluebird');
 
 module.exports = {
@@ -32,36 +34,75 @@ module.exports = {
         })
     },
 
+    followStream({ userId, streamId }) {
+        return Promise.join(User.findById(userId),
+            Stream.findById(streamId),
+            (user, stream) => {
+                if(!stream)
+                    throw new BadRequestError('stream doesn\'t exist');
+                
+                if (user.followingStreams.filter(stream => stream.toString() === streamId ).length > 0)
+                    throw new BadRequestError('allready following this stream');
+
+                if (stream.followers === undefined)
+                    stream.followers = 0;
+                stream.followers++;
+
+                user.followingStreams.push(stream);
+                
+                return Promise.all([stream.save(), user.save()]);
+            })
+    },
+
     // find all streams except the one of the given user
     findAll(user) {
         return Stream.find({
             user: { $ne: user }
         }).populate('songs')
             .then(streams => {
-                return Promise.map(streams, stream => {
-                    let artistsIds = new Set();
-
-                    for (let song of stream.songs) {
-                        artistsIds.add(song.artist);
-                    }
-
-                    return Promise.join(
-                        ArtistService.getArtists([...artistsIds])
-                            .then(artists => {
-                                return artists.map(artist => artist.name)
-                            }),
-                        GenreService.getArtistsGenres([...artistsIds]),
-                        (artistsNames, genres) => {
-                            return {
-                                streamId: stream._id,
-                                followers: stream.followers,
-                                artists: artistsNames,
-                                genres
-                            };
-                        }
-                    )
-                });
+                return this.formatStreams(streams);
             })
+    },
+
+    findFollowedStreams(userId) {
+        return User.findById(userId)
+            .then(user => {
+                if (!user)
+                    throw new BadRequestError('no such user');
+
+                return Stream.find({
+                    _id: { $in: user.followingStreams}
+                }).populate('songs')
+            })
+            .then(streams => {
+                return this.formatStreams(streams);
+            })
+    },
+
+    formatStreams(streams) {
+        return Promise.map(streams, stream => {
+            let artistsIds = new Set();
+
+            for (let song of stream.songs) {
+                artistsIds.add(song.artist);
+            }
+
+            return Promise.join(
+                ArtistService.getArtists([...artistsIds])
+                    .then(artists => {
+                        return artists.map(artist => artist.name)
+                    }),
+                GenreService.getArtistsGenres([...artistsIds]),
+                (artistsNames, genres) => {
+                    return {
+                        streamId: stream._id,
+                        followers: stream.followers,
+                        artists: artistsNames,
+                        genres
+                    };
+                }
+            )
+        });
     },
 
     addSongsToStream(streamId, songIds) {

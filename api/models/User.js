@@ -5,7 +5,8 @@ let userSchema = new mongoose.Schema({
     email: String,
     profilePictureUrl: String,
     username: String,
-    password: { type: String, minLength: 6 }
+    password: { type: String, minLength: 6 },
+    followingStreams: [{ type: mongoose.Schema.Types.ObjectId, ref: "Stream" }]
 });
 
 userSchema.methods.verifyPassword = function (password) {

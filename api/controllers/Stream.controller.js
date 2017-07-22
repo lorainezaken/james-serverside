@@ -50,7 +50,43 @@ router.post('/stream/:streamId/songs',
 router.post('/followStream',
     authenticate,
     (req, res) => {
+        if (req.isAuthenticated()) {
+            let body = req.body;
+            body.userId = req.user.id;
+            return StreamService.followStream(body)
+                .then(() => {
+                    return res.sendStatus(HttpStatus.OK);
+                })
+                .catch(err => {
+					if (err.status)
+						res.status(err.status).json(err).send();
+					else {
+						console.error(err);
+						res.sendStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+					}
+				})
+        } else
+			return res.sendStatus(HttpStatus.FORBIDDEN);
+    });
 
+router.get('/followedStreams',
+    authenticate,
+    (req, res) => {
+        if (req.isAuthenticated()) {
+            return StreamService.findFollowedStreams(req.user.id)
+                .then(streams => {
+                    return res.status(HttpStatus.OK).json(streams)
+                })
+                .catch(err => {
+					if (err.status)
+						res.status(err.status).json(err).send();
+					else {
+						console.error(err);
+						res.sendStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+					}
+				})
+        } else
+			return res.sendStatus(HttpStatus.FORBIDDEN);
     });
 
 router.get('/streams',
@@ -62,11 +98,13 @@ router.get('/streams',
                     return res.status(HttpStatus.OK).json(streams)
                 })
                 .catch(err => {
-                    console.error(err);
-                    return res.status(HttpStatus.BAD_REQUEST).json({
-                        message: err.message
-                    }).send();
-                })
+					if (err.status)
+						res.status(err.status).json(err).send();
+					else {
+						console.error(err);
+						res.sendStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+					}
+				})
         else
 			return res.sendStatus(HttpStatus.FORBIDDEN);
     });
