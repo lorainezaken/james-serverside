@@ -14,6 +14,7 @@ module.exports = {
 
     getAll() {
         return Song.find({})
+            .populate('artist')
             .then(songs => songs.map(this.convertToApiFormat))
     },
 
@@ -22,6 +23,6 @@ module.exports = {
             _id: { 
                 $in: songIds
             }
-        })
+        }).populate('artist')
     }
 }
