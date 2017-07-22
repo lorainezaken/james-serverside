@@ -39,5 +39,20 @@ module.exports = {
                 }
             });
         });
+    },
+    getArtistsGenres(artistsIds) {
+        return FunkGenre.find({
+            artists: {
+                $in: artistsIds
+            }
+        }).then(genres => {
+            let distinctGenres = new Set();
+
+            for (let genre of genres) {
+                distinctGenres.add(genre.genre);
+            }
+
+            return [...distinctGenres];
+        })
     }
 }
