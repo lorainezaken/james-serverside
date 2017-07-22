@@ -61,7 +61,7 @@ module.exports = {
         }).populate('songs')
             .populate('user')
             .then(streams => {
-                return this.formatStreams(streams);
+                return this.formatStreams(streams, user);
             })
     },
 
@@ -73,15 +73,14 @@ module.exports = {
 
                 return Stream.find({
                     _id: { $in: user.followingStreams}
-                }).populate('songs')
-                .populate('user')
-            })
-            .then(streams => {
-                return this.formatStreams(streams);
+                }).populate('songs').populate('user')
+                    .then(streams => {
+                        return this.formatStreams(streams, user);
+                    })
             })
     },
 
-    formatStreams(streams) {
+    formatStreams(streams, user) {
         return Promise.map(streams, stream => {
             let artistsIds = new Set();
 
@@ -99,6 +98,7 @@ module.exports = {
                     return {
                         streamId: stream._id,
                         followers: stream.followers,
+                        isFollowing: user.followingStreams.filter(followed => followed.toString() === stream._id.toString()).length > 0,
                         artists: artistsNames,
                         username: (stream.user || {}).username,
 	                    userProfilePic: (stream.user || {}).profilePictureUrl,
