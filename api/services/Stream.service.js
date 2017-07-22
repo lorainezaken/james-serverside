@@ -83,8 +83,11 @@ module.exports = {
     formatStreams(streams, user) {
         return Promise.map(streams, stream => {
             let artistsIds = new Set();
+            let albumCover;
 
             for (let song of stream.songs) {
+                if (song.albumCoverUrl)
+                    albumCover = song.albumCoverUrl;
                 artistsIds.add(song.artist);
             }
 
@@ -97,6 +100,7 @@ module.exports = {
                 (artistsNames, genres) => {
                     return {
                         streamId: stream._id,
+                        streamPicUrl: albumCover,
                         followers: stream.followers,
                         isFollowing: user.followingStreams.filter(followed => followed.toString() === stream._id.toString()).length > 0,
                         artists: artistsNames,
