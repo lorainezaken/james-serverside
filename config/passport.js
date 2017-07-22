@@ -28,7 +28,7 @@ module.exports = function(passport) {
 
 		// Validate user
 		return Promise.try(() => {
-			if (jwtPayload.sub !== config.jwt.loginSubject)
+			if (jwtPayload.sub !== 'login')
 				throw new Error('Token subject is incorrect');
 		})
 			.then(() => User.findById(jwtPayload.user))
@@ -41,12 +41,8 @@ module.exports = function(passport) {
 				return done(null, { user });
 			})
 			.catch((err) => {
-				if (err instanceof UnauthorizedError)
-					return done(err);
-				else {
-					console.warn('failed to authenticate jwt', err);
-					return done(new Error('Failed to authenticate user'));
-				}
+				console.warn('failed to authenticate jwt', err);
+				return done(new Error('Failed to authenticate user'));
 			});
 	}));
 };
