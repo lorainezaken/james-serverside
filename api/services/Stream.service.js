@@ -102,6 +102,7 @@ module.exports = {
                         streamId: stream._id,
                         streamPicUrl: albumCover,
                         followers: stream.followers,
+                        trailer: stream.songs[0].songFileUrl,
                         isFollowing: user.followingStreams.filter(followed => followed.toString() === stream._id.toString()).length > 0,
                         artists: artistsNames,
                         username: (stream.user || {}).username,
