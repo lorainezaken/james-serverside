@@ -40,7 +40,7 @@ module.exports = {
 				username,
 				email,
 				password,
-				profilePic
+				profilePictureUrl: profilePic
 			})
 		})
 		.then(user => {
